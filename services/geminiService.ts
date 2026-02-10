@@ -1,77 +1,96 @@
-import { GoogleGenAI, Type } from "@google/genai";
 import { QuoteData } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
-// Using gemini-3-flash-preview for fast text generation
-const TEXT_MODEL = "gemini-3-flash-preview";
-// Using gemini-2.5-flash-image for efficient image generation
-const IMAGE_MODEL = "gemini-2.5-flash-image";
-
-export const generateQuote = async (topic: string): Promise<QuoteData> => {
-  try {
-    const prompt = `Genera una frase motivadora, filosófica o estoica en Español sobre el tema: "${topic}". 
-    La frase debe ser profunda, breve e impactante.
-    Retorna SOLO un objeto JSON.`;
-
-    const response = await ai.models.generateContent({
-      model: TEXT_MODEL,
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            text: { type: Type.STRING, description: "La frase motivadora" },
-            author: { type: Type.STRING, description: "El autor de la frase (o 'Anónimo')" },
-            category: { type: Type.STRING, description: "Una categoría breve de una palabra" }
-          },
-          required: ["text", "author"]
-        }
-      }
-    });
-
-    const jsonText = response.text;
-    if (!jsonText) throw new Error("No response text from Gemini");
-    
-    return JSON.parse(jsonText) as QuoteData;
-  } catch (error) {
-    console.error("Error generating quote:", error);
-    return {
-      text: "La disciplina es el puente entre metas y logros.",
-      author: "Jim Rohn",
-      category: "Disciplina"
-    };
+const STATIC_QUOTES: QuoteData[] = [
+  {
+    text: "La disciplina es el puente entre metas y logros.",
+    author: "Jim Rohn",
+    category: "Disciplina"
+  },
+  {
+    text: "No cuentes los días, haz que los días cuenten.",
+    author: "Muhammad Ali",
+    category: "Motivación"
+  },
+  {
+    text: "El éxito es la suma de pequeños esfuerzos repetidos día tras día.",
+    author: "Robert Collier",
+    category: "Éxito"
+  },
+  {
+    text: "Todo lo que siempre has querido está al otro lado del miedo.",
+    author: "George Addair",
+    category: "Valentía"
+  },
+  {
+    text: "Cae siete veces, levántate ocho.",
+    author: "Proverbio Japonés",
+    category: "Resiliencia"
+  },
+  {
+    text: "La única forma de hacer un gran trabajo es amar lo que haces.",
+    author: "Steve Jobs",
+    category: "Pasión"
+  },
+  {
+    text: "No te detengas cuando estés cansado, detente cuando hayas terminado.",
+    author: "Marilyn Monroe",
+    category: "Persistencia"
+  },
+  {
+    text: "El dolor es temporal. La renuncia dura para siempre.",
+    author: "Lance Armstrong",
+    category: "Fortaleza"
+  },
+  {
+    text: "Si puedes soñarlo, puedes hacerlo.",
+    author: "Walt Disney",
+    category: "Visión"
+  },
+  {
+    text: "La mejor venganza es un éxito masivo.",
+    author: "Frank Sinatra",
+    category: "Ambición"
+  },
+  {
+    text: "Sé el cambio que quieres ver en el mundo.",
+    author: "Mahatma Gandhi",
+    category: "Liderazgo"
+  },
+  {
+    text: "No busques el momento perfecto, solo busca el momento y hazlo perfecto.",
+    author: "Melanie Salmi",
+    category: "Acción"
+  },
+  {
+    text: "Tus hábitos forjan tu futuro.",
+    author: "Anónimo",
+    category: "Hábitos"
+  },
+  {
+    text: "El que conquista a otros es fuerte; el que se conquista a sí mismo es poderoso.",
+    author: "Lao-Tse",
+    category: "Estoicismo"
+  },
+  {
+    text: "Sufriremos más a menudo en la imaginación que en la realidad.",
+    author: "Séneca",
+    category: "Estoicismo"
+  },
+  {
+    text: "Haz cada día tu obra maestra.",
+    author: "John Wooden",
+    category: "Excelencia"
+  },
+  {
+    text: "Cree que puedes y ya estarás a medio camino.",
+    author: "Theodore Roosevelt",
+    category: "Confianza"
   }
-};
+];
 
-export const generateBackgroundVisual = async (quote: string): Promise<string | null> => {
-  try {
-    const prompt = `A minimal, abstract, high-contrast black and white artistic background image representing this concept: "${quote}". 
-    Dark aesthetic, noir style, charcoal texture, smoke, or geometry. 
-    Must be very dark with mostly black space. No text in the image.`;
-
-    const response = await ai.models.generateContent({
-      model: IMAGE_MODEL,
-      contents: prompt,
-      config: {
-        // Configuring specifically for image output if supported by the model wrapper logic
-        // For gemini-2.5-flash-image, we prompt for an image and expect base64 data in parts
-      }
-    });
-
-    // Check parts for inline data
-    const parts = response.candidates?.[0]?.content?.parts;
-    if (parts) {
-      for (const part of parts) {
-        if (part.inlineData && part.inlineData.data) {
-          return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-        }
-      }
-    }
-    return null;
-  } catch (error) {
-    console.error("Error generating visual:", error);
-    return null;
-  }
+export const getRandomQuote = async (): Promise<QuoteData> => {
+  const randomIndex = Math.floor(Math.random() * STATIC_QUOTES.length);
+  // Simulación de carga mínima para efecto visual
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return STATIC_QUOTES[randomIndex];
 };
