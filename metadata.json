@@ -1,0 +1,5 @@
+{
+  "name": "FocusWall - Fondo de Pantalla Motivacional",
+  "description": "Una aplicación minimalista que muestra frases motivadoras e imágenes inspiradoras generadas por IA en modo oscuro, actualizándose automáticamente cada 10 minutos.",
+  "requestFramePermissions": []
+}
